@@ -1,9 +1,9 @@
 function Is_Windows()
-    return vim.loop.os_name().version:match("Windows")
+    return vim.loop.os_uname().version:match("Windows")
 end
 
 function Get_User_Home()
-    if Is_Windows then
+    if Is_Windows() then
         return os.getenv("USERPROFILE") .. "\\.vim\\undodir"
     else
         return os.getenv("HOME") .. "/.vim/undodir"
