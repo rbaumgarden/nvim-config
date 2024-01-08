@@ -8,8 +8,8 @@ return require('packer').startup(function(use)
     use 'wbthomason/packer.nvim'
 
     use {
-        'nvim-telescope/telescope.nvim', tag = '0.1.1',
-        -- or                            , branch = '0.1.x',
+        'nvim-telescope/telescope.nvim', branch = '0.1.x',
+        -- or                            , tag = '0.1.5',
         requires = { { 'nvim-lua/plenary.nvim' } }
     }
 
@@ -53,6 +53,7 @@ return require('packer').startup(function(use)
             { 'hrsh7th/cmp-path' },         -- Optional
             { 'saadparwaiz1/cmp_luasnip' }, -- Optional
             { 'hrsh7th/cmp-nvim-lua' },     -- Optional
+            { 'hrsh7th/cmp-nvim-lsp-signature-help' },
 
             -- Snippets
             { 'L3MON4D3/LuaSnip' },             -- Required
