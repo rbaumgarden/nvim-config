@@ -56,3 +56,7 @@ vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><
 
 --sets a file to executable.  useful for bash scripts.
 vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
+
+--add checkbox
+vim.keymap.set("n", "<leader>cb", "I[ ] <Esc>")
+vim.keymap.set("v", "<leader>cb", ":s!\\(\\S\\)![ ] \\1<CR>")
