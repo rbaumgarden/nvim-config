@@ -31,6 +31,7 @@ return require('packer').startup(function(use)
         end
     })
 
+    require 'nvim-treesitter.install'.compilers = { "cl", "clang" }
     use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
     use('nvim-treesitter/playground')
     use('theprimeagen/harpoon')
