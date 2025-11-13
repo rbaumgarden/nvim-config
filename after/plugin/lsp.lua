@@ -1,66 +1,103 @@
-local lsp = require('lsp-zero')
+-- This version removes lsp-zero and uses the native vim.lsp.config API (Neovim 0.11+).
+-- Mason handles installation; this just configures servers and keymaps.
 
-lsp.preset('recommended')
-
-lsp.ensure_installed({
-    'rust_analyzer',
-})
-
---Fix "Undefined global 'vim'"
-lsp.configure('lua-language-server', {
-    settings = {
-        Lua = {
-            diagnostics = {
-                globals = { 'vim' }
-            }
-        }
-    }
-})
-
-local cmp = require('cmp')
-cmp.setup {
-    sources = {
-        { name = 'nvim_lsp_signature_help' }
-    }
+-- =========================
+-- Mason setup
+-- =========================
+require('mason').setup()
+require('mason-lspconfig').setup {
+    ensure_installed = { 'rust_analyzer', 'lua_ls' },
+    handlers = {
+        function(server_name)
+            local server = vim.lsp.config[server_name]
+            if server then
+                server.launch()
+            end
+        end,
+    },
 }
+
+-- =========================
+-- nvim-cmp setup
+-- =========================
+local cmp = require('cmp')
 local cmp_select = { behavior = cmp.SelectBehavior.Select }
-local cmp_mappings = lsp.defaults.cmp_mappings({
-    ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-    ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-    ['<C-y>'] = cmp.mapping.confirm({ select = true }),
-    ['<C-Space>'] = cmp.mapping.complete(),
+
+cmp.setup({
+    mapping = {
+        ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
+        ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
+        ['<C-y>'] = cmp.mapping.confirm({ select = true }),
+        ['<C-Space>'] = cmp.mapping.complete(),
+    },
+    sources = {
+        { name = 'nvim_lsp' },
+        { name = 'nvim_lsp_signature_help' },
+        { name = 'buffer' },
+        { name = 'path' },
+    },
 })
 
-lsp.setup_nvim_cmp({
-    mapping = cmp_mappings
-})
+-- =========================
+-- Capabilities
+-- =========================
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
-lsp.set_preferences({
-    sign_icons = {}
-})
+-- =========================
+-- Keymaps (on_attach)
+-- =========================
+local function OrganizeImports()
+    vim.lsp.buf.code_action({
+        apply = true,
+        context = { only = { "source.organizeimports" }, diagnostics = {} }
+    })
+end
 
-lsp.setup_nvim_cmp({
-    mapping = cmp_mappings
-})
-
-lsp.on_attach(function(client, bufnr)
+local on_attach = function(client, bufnr)
     local opts = { buffer = bufnr, remap = false }
 
-    vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
-    vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
-    vim.keymap.set("n", "<leader>ws", function() vim.lsp.buf.workspace_symbol() end, opts)
-    vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, opts)
-    vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts)
-    vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts)
-    vim.keymap.set("n", "<leader>ca", function() vim.lsp.buf.code_action() end, opts)
-    vim.keymap.set("n", "<leader>rr", function() vim.lsp.buf.references() end, opts)
-    vim.keymap.set("n", "<leader>rn", function() vim.lsp.buf.rename() end, opts)
-    vim.keymap.set("n", "<leader>oi", function() vim.lsp.buf.organize_imports() end, opts)
-    vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
-end)
+    vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+    vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+    vim.keymap.set("n", "<leader>ws", vim.lsp.buf.workspace_symbol, opts)
+    vim.keymap.set("n", "<leader>vd", vim.diagnostic.open_float, opts)
+    vim.keymap.set("n", "[d", vim.diagnostic.goto_next, opts)
+    vim.keymap.set("n", "]d", vim.diagnostic.goto_prev, opts)
+    vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+    vim.keymap.set("n", "<leader>rr", vim.lsp.buf.references, opts)
+    vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+    vim.keymap.set("n", "<leader>oi", OrganizeImports(), opts)
+    vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
+end
 
-lsp.setup()
+-- =========================
+-- Server configurations
+-- =========================
 
+-- Lua LS (to fix "Undefined global 'vim'")
+vim.lsp.config['lua_ls'] = {
+    cmd = { 'lua-language-server' },
+    on_attach = on_attach,
+    capabilities = capabilities,
+    settings = {
+        Lua = {
+            diagnostics = { globals = { 'vim' } },
+        },
+    },
+}
+
+-- Rust Analyzer
+vim.lsp.config['rust_analyzer'] = {
+    on_attach = on_attach,
+    capabilities = capabilities,
+}
+
+-- =========================
+-- Diagnostics
+-- =========================
 vim.diagnostic.config({
-    virtual_text = true
+    virtual_text = true,
+    signs = true,
+    update_in_insert = false,
+    severity_sort = true,
 })
