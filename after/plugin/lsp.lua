@@ -66,8 +66,11 @@ local on_attach = function(client, bufnr)
     vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
     vim.keymap.set("n", "<leader>rr", vim.lsp.buf.references, opts)
     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-    vim.keymap.set("n", "<leader>oi", OrganizeImports(), opts)
     vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
+
+    --if vim.lsp.buf.organize_imports then
+        vim.keymap.set("n", "<leader>oi", OrganizeImports(), opts)
+    --end
 end
 
 -- =========================

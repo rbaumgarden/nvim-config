@@ -31,7 +31,7 @@ return require('packer').startup(function(use)
         end
     })
 
-    use { "ellisonleao/glow.nvim", config = true, cmd = "Glow" }
+    use { "ellisonleao/glow.nvim" }
 
     require 'nvim-treesitter.install'.compilers = { "cl", "clang" }
     use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
